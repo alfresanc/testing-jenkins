@@ -7,7 +7,6 @@ LABEL description="Belcorp's Campaign Manager Back End image for Jenkins"
 
 ENV AWSCLI_VERSION "1.16.60"
 
-VOLUME /root/.aws
 VOLUME /project
 WORKDIR /project
 

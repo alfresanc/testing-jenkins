@@ -17,7 +17,7 @@ pipeline {
                     if (env.BRANCH_NAME == 'develop') {
                         sh 'make coverage'
                     } else if (env.BRANCH_NAME == "master"){
-                        echo 'Not allowed by now'
+                        echo 'Holi'
                     } else {
                         echo 'Not allowed by now'
                     }
