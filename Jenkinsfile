@@ -61,6 +61,7 @@ pipeline {
             steps {
                 echo 'Downloading latest code version...'
                 checkout scm
+                notifyBuild('STARTED')
             }
         }
         stage ('Lambdas Zip -> S3') {
@@ -106,6 +107,7 @@ pipeline {
 
     post {
         always {
+            notifyBuild(currentBuild.result)
             cleanWs()
             // TODO: Cleanup step
             // docker system prune --force --all --volumes
@@ -122,4 +124,23 @@ pipeline {
             echo 'This will run only if the run was marked as unstable'
         }
     }
+}
+def notifyBuild(String buildStatus = 'STARTED') {
+    buildStatus = buildStatus ?: 'SUCCESS'
+    String buildPhase = (buildStatus == 'STARTED') ? 'STARTED' : 'FINALIZED'
+    commit = (buildStatus == 'STARTED') ? 'null' : sh(returnStdout: true, script: "git log -n 1 --pretty=format:'%h'")
+    
+    sh """curl -H "Content-Type: application/json" -X POST -d '{
+        "name": "${env.JOB_NAME}",
+        "type": "pipeline",
+        "build": {
+            "phase": "${buildPhase}",
+            "status": "${buildStatus}",
+            "number": ${env.BUILD_ID},
+            "scm": {
+                "commit": "${commit}"
+            },
+            "artifacts": {}
+        }
+    }' https://devops.belcorp.biz/gestionar_despliegues_qa"""
 }
